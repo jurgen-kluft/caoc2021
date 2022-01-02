@@ -29,5 +29,6 @@ tags
 
 !*.ini
 !*.bat
+!*.sh
 
 #except the following folders

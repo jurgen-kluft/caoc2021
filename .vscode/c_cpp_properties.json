@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/Users/obnosis1/dev.go/src/github.com/jurgen-kluft/xbase/source/main/include",
+                "/Users/obnosis1/dev.go/src/github.com/jurgen-kluft/xunittest/source/main/include",
+                "/Users/obnosis1/dev.go/src/github.com/jurgen-kluft/xaoc2021/source/main/include",
+                "/Users/obnosis1/dev.go/src/github.com/jurgen-kluft/xtext/source/main/include"
+            ],
+            "defines": [
+                "TARGET_MAC_DEV_DEBUG"
+            ],
+            "macFrameworkPath": [
+                "/Libraary/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}

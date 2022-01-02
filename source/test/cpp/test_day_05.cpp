@@ -15,6 +15,10 @@
 
 #include "xunittest/xunittest.h"
 
+#include <time.h>
+#include <stdio.h>
+
+
 extern unsigned char   day5_txt[];
 extern unsigned int    day5_txt_len;
 
@@ -135,7 +139,7 @@ UNITTEST_SUITE_BEGIN(day05)
                 }
             }
 
-            printf("Count: %d\n", va_t(count));
+            printf("Count: %d\n", count);
 
             grid->destroy(grid);
             lines->destroy(lines);
@@ -243,7 +247,7 @@ UNITTEST_SUITE_BEGIN(day05)
                 }
             }
 
-            printf("Count: %d\n", va_t(count));
+            printf("Count: %d\n", count);
 
             grid->destroy(grid);
             lines->destroy(lines);

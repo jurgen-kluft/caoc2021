@@ -12,9 +12,8 @@
                 "TARGET_MAC_DEV_DEBUG"
             ],
             "macFrameworkPath": [
-                "/Libraary/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/System/Library/Frameworks"
             ],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/local/opt/llvm/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64"

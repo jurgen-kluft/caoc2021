@@ -49,10 +49,81 @@ UNITTEST_SUITE_BEGIN(day09)
             return lowpoint ? (h+1) : 0;
         }
 
-        static inline s32 find_basin(s32 x, s32 y, s8* grid, s32 gridsizex, s32 gridsizey)
+        struct xy_t
         {
+            s16 x,y;
+        };
 
-            return 0;
+        static inline bool is_xy_open(s8 h)
+        {
+            return h >= 0 && h < 9;
+        }
+        static inline void close_xy(s8& h)
+        {
+            h = -10 - h;
+        }
+
+        static inline s32 find_basin(s16 x, s16 y, xy_t* stack, s32 const stack_cap, s8* grid, s16 gridsizex, s16 gridsizey)
+        {
+            // NOTE: incoming location is an unsearched (X >= 0 && X < 9) location
+
+            s32 stack_size = 0;
+
+            // adding a location to the stack also includes marking that location as taken
+            close_xy(grid[y*gridsizex + x]);
+            stack[stack_size++] = {x,y};
+
+            // flood fill algorithm
+            s32 basin_size = 0;
+            while (stack_size>0)
+            {
+                xy_t const xy = stack[--stack_size];
+
+                // each location we take also will increase the size of the basin
+                basin_size++;
+
+                // go in x-right, x-left, y-up and y-down direction adding new locations to the stack
+                s16 d = 1;
+
+                // adding a location to the stack also includes marking that location as taken
+
+                // x-right, positive x
+                d = 1;
+                while (is_xy_open(grid[xy.y*gridsizex + xy.x + d]))
+                {
+                    close_xy(grid[xy.y*gridsizex + xy.x + d]);
+                    stack[stack_size++] = {(s16)(xy.x + d), xy.y};
+                    d++;
+                }
+
+                // x-left, negative x
+                d = -1;
+                while (is_xy_open(grid[xy.y*gridsizex + xy.x + d]))
+                {
+                    close_xy(grid[xy.y*gridsizex + xy.x + d]);
+                    stack[stack_size++] = {(s16)(xy.x + d), xy.y};
+                    d--;
+                }
+
+                // y-up, negative y
+                d = -1;
+                while (is_xy_open(grid[(xy.y+d)*gridsizex + xy.x]))
+                {
+                    close_xy(grid[(xy.y+d)*gridsizex + xy.x]);
+                    stack[stack_size++] = {xy.x, (s16)(xy.y+d)};
+                    d--;
+                }
+
+                // y-down, positive y
+                d = 1;
+                while (is_xy_open(grid[(xy.y+d)*gridsizex + xy.x]))
+                {
+                    close_xy(grid[(xy.y+d)*gridsizex + xy.x]);
+                    stack[stack_size++] = {xy.x, (s16)(xy.y+d)};
+                    d++;
+                }
+            }
+            return basin_size;
         }
 
         UNITTEST_TEST(part_1)
@@ -83,35 +154,23 @@ UNITTEST_SUITE_BEGIN(day09)
             s8* grid;
             process_input(grid, sx, sy, mx, my, gridsizex, gridsizey);
 
-            s32 largest_basins[3] = { -1, -1, -1 };
-            for (s32 x=sx; x<mx; x++)
-            {
-                for (s32 y=sy; y<my; y++)
-                {
-                    s8 const point = grid[y*gridsizex + x];
-                    if (point>=0 && point<9)
-                    {
-                        s32 basin_size = find_basin(x,y,grid,gridsizex,gridsizey);
+            alloc_t* allocator = context_t::system_alloc();
+            s32 const stack_size = gridsizex*gridsizey;
+            xy_t* stack = (xy_t*)allocator->allocate(stack_size*sizeof(xy_t), sizeof(void*));
 
-                        if (largest_basins[0]==-1)
-                            largest_basins[0] = basin_size;
-                        else if (largest_basins[1]==-1)
-                            largest_basins[1] = basin_size;
-                        else if (largest_basins[2]==-1)
-                            largest_basins[2] = basin_size;
-                        else 
+            s32 largest_basins[3] = { 0,0,0 };
+            for (s16 x=sx; x<mx; x++)
+            {
+                for (s16 y=sy; y<my; y++)
+                {
+                    if (is_xy_open(grid[y*gridsizex + x]))
+                    {
+                        s32 const basin_size = find_basin(x,y,stack,stack_size,grid,gridsizex,gridsizey);
                         {
                             // keep this sorted from small to large
-	                        g_qsort((void *)largest_basins, 3, sizeof(largest_basins[0]), g_cmp_s32);
-
-                            for (s32 i=0; i<3; i++)
-                            {
-                                if (basin_size > largest_basins[i])
-                                {
-                                    largest_basins[i] = basin_size;
-                                    break;
-                                }
-                            }
+                            g_qsort(largest_basins, 3);
+                            if (basin_size > largest_basins[0])
+                                largest_basins[0] = basin_size;
                         }
                     }
                 }                
@@ -120,6 +179,7 @@ UNITTEST_SUITE_BEGIN(day09)
             s32 const result = largest_basins[0]*largest_basins[1]*largest_basins[2];
             printf("sizes of largest 3 basins multiplied together %d\n", result);
 
+            allocator->deallocate(stack);
             release_input(grid);
         }
 

@@ -83,8 +83,8 @@ UNITTEST_SUITE_BEGIN(day12)
             c->m_max_visits = 1;
             for (s32 i = 0; i < c->m_max_paths; ++i)
                 c->m_path[i] = -1;
-            if (is_large_cave(cave))
-                cs->m_max_visits = -1;
+            if (is_large_cave(c))
+                c->m_max_visits = -1;
         }
 
         void add_path(cave_t * cave, cave_t * dst)
@@ -100,8 +100,8 @@ UNITTEST_SUITE_BEGIN(day12)
         struct cave_system_t
         {
             cave_t m_cave[max_caves];
-            s8     m_num_caves;
-            s8     m_max_caves;
+            u8     m_num_caves;
+            u8     m_max_caves;
             s8     m_start_cave;
             s8     m_end_cave;
         };
@@ -113,7 +113,7 @@ UNITTEST_SUITE_BEGIN(day12)
             cs->m_start_cave = -1;
             cs->m_end_cave   = -1;
             for (s32 i = 0; i < cs->m_max_caves; ++i)
-                initialize(&cs->m_cave[i]);
+                initialize(&cs->m_cave[i], i, "");
         }
 
         cave_t* get_start_cave(cave_system_t * cs)
@@ -150,7 +150,7 @@ UNITTEST_SUITE_BEGIN(day12)
             else if (is_end_cave(cave))
                 cs->m_end_cave = cave->m_index;
 
-            i += 1;
+            cs->m_num_caves += 1;
             return cave;
         }
 
@@ -191,7 +191,7 @@ UNITTEST_SUITE_BEGIN(day12)
             s16 m_cave;                   // Current cave we are at
             s16 m_length;                 // The number of caves in our route
             s8  m_cave_visits[max_caves]; // How many times have we visited a certain cave
-            s8  m_trace[64];              // The route we have travelled
+            s8  m_trace[512];             // The route we have travelled
         };
 
         static void route_init(cave_system_t * cs, route_t * r)
@@ -200,7 +200,7 @@ UNITTEST_SUITE_BEGIN(day12)
             r->m_length = 0;
             for (s32 i = 0; i < max_caves; ++i)
                 r->m_cave_visits[i] = cs->m_cave[i].m_max_visits;
-            for (s32 i = 0; i < 64; ++i)
+            for (s32 i = 0; i < 512; ++i)
                 r->m_trace[i] = -1;
         }
 
@@ -209,6 +209,7 @@ UNITTEST_SUITE_BEGIN(day12)
             r->m_cave               = c->m_index;
             r->m_trace[r->m_length] = c->m_index;
             r->m_length += 1;
+            ASSERT(r->m_length < 512);
 
             if (r->m_cave_visits[c->m_index] > 0)
                 r->m_cave_visits[c->m_index] -= 1;
@@ -226,33 +227,34 @@ UNITTEST_SUITE_BEGIN(day12)
         // Copy current state of route to another
         static void route_copy(route_t const* src, route_t* dst)
         {
-            dst.m_cave       = src.m_cave;
-            dst.m_trace_size = src.m_trace_size;
+            dst->m_cave       = src->m_cave;
+            dst->m_length = src->m_length;
             for (s32 i = 0; i < max_caves; ++i)
-                dst.m_cave_visits[i] = src.m_cave_visits[i];
-            for (s32 i = 0; i < src.m_trace_size; ++i)
-                dst.m_trace[i] = src.m_trace[i];
+                dst->m_cave_visits[i] = src->m_cave_visits[i];
+            for (s32 i = 0; i < src->m_length; ++i)
+                dst->m_trace[i] = src->m_trace[i];
         }
 
         struct routes_t
         {
             s16     m_num;
             s16     m_max;
-            route_t m_route[512];
+            route_t m_route[1024];
         };
 
         static void routes_init(cave_system_t * cs, routes_t * routes)
         {
-            routes.m_num = 0;
-            routes.m_max = 512;
-            for (s32 i = 0; i < routes.m_max; ++i)
-                route_init(&routes.m_route[i]);
+            routes->m_num = 0;
+            routes->m_max = 1024;
+            for (s32 i = 0; i < routes->m_max; ++i)
+                route_init(cs, &routes->m_route[i]);
         }
 
         static void routes_add(routes_t * rs, route_t * r)
         {
             route_copy(r, &rs->m_route[rs->m_num]);
             rs->m_num += 1;
+            ASSERT(rs->m_num < rs->m_max);
         }
 
         static void routes_remove(routes_t * rs, s16 i)
@@ -275,16 +277,49 @@ UNITTEST_SUITE_BEGIN(day12)
             route_t start_route;
             route_init(cs, &start_route);
             route_visit(&start_route, start);
+            routes_add(&open_routes, &start_route);
+            while (open_routes.m_num > 0)
+            {
+                s16 const n = open_routes.m_num - 1;
+                route_t* r = &open_routes.m_route[n];
+                cave_t* c = &cs->m_cave[r->m_cave];
+
+                // if we have reached the end cave, add this route to the final routes
+                if (c->m_index == end->m_index)
+                {
+                    routes_add(final_routes, r);
+                }
+                else
+                {
+                    // for each possible path from this cave
+                    for (s32 i = 0; i < c->m_num_paths; ++i)
+                    {
+                        cave_t* next = &cs->m_cave[c->m_path[i]];
+                        if (route_can_visit(r, next))
+                        {
+                            route_t new_route;
+                            route_copy(r, &new_route);
+                            route_visit(&new_route, next);
+                            routes_add(&open_routes, &new_route);
+                        }
+                    }
+                }
+                routes_remove(&open_routes, n);
+            }
         }
 
         UNITTEST_TEST(part_1)
         {
             cave_system_t cs;
+            initialize(&cs);
             parse_cave_system(&cs);
 
             routes_t final_routes;
-            routes_init(cs, &final_routes);
-            traverse_cave_system(cs, &final_routes);
+            routes_init(&cs, &final_routes);
+            traverse_cave_system(&cs, &final_routes);
+
+            printf("number of final routes %d", final_routes.m_num);
+
         }
 
         UNITTEST_TEST(part_2) {}

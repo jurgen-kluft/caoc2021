@@ -34,14 +34,14 @@ UNITTEST_SUITE_BEGIN(day11)
         template<typename T>
         static inline void set_all(T* data, u32 length, T const& set)
         {
-            s32 i = 0;
+            u32 i = 0;
             while (i<length) { data[i++]=set; }
         }
 
         template<typename T>
         static inline s32 count_until(T const* data, u32 length, T const& until)
         {
-            s32 i = 0;
+            u32 i = 0;
             while (i<length) { if (data[i] == until) return i; ++i; }
             return -1;
         }
@@ -49,7 +49,7 @@ UNITTEST_SUITE_BEGIN(day11)
         template<typename T>
         static inline s32 count_occurances(T const* data, u32 length, T const& item)
         {
-            s32 i = 0;
+            u32 i = 0;
             s32 c = 0;
             while (i<length) { c += (data[i++] == item) ? 1 : 0; }
             return c;
@@ -165,7 +165,7 @@ UNITTEST_SUITE_BEGIN(day11)
             // Read in the grid data
             s32 gy = sy;
             s32 gx = sx;
-            for (s32 i=0; i<day11_txt_len; ++i)
+            for (u32 i=0; i<day11_txt_len; ++i)
             {
                 u8 const c = day11_txt[i];
                 if (c == '\n')
@@ -213,7 +213,7 @@ UNITTEST_SUITE_BEGIN(day11)
             // Read in the grid data
             s32 gy = sy;
             s32 gx = sx;
-            for (s32 i=0; i<day11_txt_len; ++i)
+            for (u32 i=0; i<day11_txt_len; ++i)
             {
                 u8 const c = day11_txt[i];
                 if (c == '\n')

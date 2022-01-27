@@ -119,7 +119,7 @@ UNITTEST_SUITE_BEGIN(day10)
             u32 total_error = 0;
 
             u8 const* navline_begin = day10_txt;
-            for (s32 i=0; i<day10_txt_len; ++i)
+            for (u32 i=0; i<day10_txt_len; ++i)
             {
                 u8 const c = day10_txt[i];
                 if (c == '\n')
@@ -143,7 +143,7 @@ UNITTEST_SUITE_BEGIN(day10)
         {
             // keep track of the total error score
             s32 number_of_lines = 0;
-            for (s32 i=0; i<day10_txt_len; ++i)
+            for (u32 i=0; i<day10_txt_len; ++i)
             {
                 u8 const c = day10_txt[i];
                 if (c == '\n')
@@ -157,7 +157,7 @@ UNITTEST_SUITE_BEGIN(day10)
             s32 scores_size = 0;
 
             u8 const* navline_begin = day10_txt;
-            for (s32 i=0; i<day10_txt_len; ++i)
+            for (u32 i=0; i<day10_txt_len; ++i)
             {
                 u8 const c = day10_txt[i];
                 if (c == '\n')
@@ -179,7 +179,7 @@ UNITTEST_SUITE_BEGIN(day10)
             g_qsort(scores, scores_size);
             u64 const mid_score = scores[scores_size / 2];
 
-            printf("mid completion score %d\n", mid_score);
+            printf("mid completion score %lld\n", mid_score);
         }
     }
 }

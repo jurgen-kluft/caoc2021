@@ -15,7 +15,6 @@
 !.vscode/*.json
 
 !*.go
-!*.lua
 
 !*.cs
 !*.csproj
